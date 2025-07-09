@@ -4,9 +4,6 @@
 
 **Smart Tandon** adalah proyek berbasis Arduino dan antarmuka web untuk memonitor level air dan mengontrol pompa secara otomatis. Lupakan kekhawatiran tandon kosong atau air meluap, sistem ini akan menanganinya untuk Anda!
 
-![Dashboard Preview](https://user-images.githubusercontent.com/23385793/182045959-1e285810-7eda-4530-97c3-37ca821033b0.png)
-*(Ganti dengan screenshot dashboard Anda)*
-
 ---
 
 ## ✨ Fitur Utama
