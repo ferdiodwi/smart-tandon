@@ -332,6 +332,7 @@ void loop() {
     sendDataToSerial();
     lastSerialSend = currentTime;
   }
+
   
   // Delay kecil untuk stabilitas
   delay(10);
