@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Monitoring Level Air</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
+        
+        body { 
+            font-family: 'Poppins', sans-serif; 
+            background-color: #f0f4f8; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: center; 
+            align-items: center; 
+            min-height: 100vh; 
+            margin: 0; 
+            padding: 20px; 
+        }
+        
+        .title { 
+            color: #1e3a5f; 
+            margin-bottom: 20px; 
+            text-align: center; 
+        }
+        
+        .dashboard { 
+            display: flex; 
+            flex-wrap: wrap; 
+            justify-content: center; 
+            gap: 30px; 
+            width: 100%; 
+            max-width: 1400px; 
+        }
+        
+        .tank-container { 
+            width: 250px; 
+            height: 400px; 
+            background-color: #e0e5ec; 
+            border: 10px solid #d1d9e6; 
+            border-radius: 20px; 
+            box-shadow: inset 5px 5px 10px #babecc, inset -5px -5px 10px #ffffff; 
+            position: relative; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+        }
+        
+        #water-level { 
+            width: 100%; 
+            background: linear-gradient(to top, #4dabf7, #1971c2); 
+            position: absolute; 
+            bottom: 0; 
+            border-radius: 0 0 10px 10px; 
+            transition: height 1s ease-out, background 1s ease; 
+        }
+        
+        .info-overlay { 
+            z-index: 2; 
+            text-align: center; 
+            color: #fff; 
+            text-shadow: 0px 1px 5px rgba(0,0,0,0.4); 
+        }
+        
+        .info-overlay #level-percent { 
+            font-size: 70px; 
+            font-weight: 700; 
+        }
+        
+        .info-overlay #alert-status { 
+            font-size: 24px; 
+            font-weight: 600; 
+            letter-spacing: 1px; 
+            text-transform: uppercase; 
+        }
+        
+        .status-penuh { 
+            background: linear-gradient(to top, #38d9a9, #087f5b) !important; 
+        }
+        
+        .status-kritis { 
+            background: linear-gradient(to top, #ff8787, #c92a2a) !important; 
+        }
+        
+        .status-manual { 
+            background: linear-gradient(to top, #ffd43b, #fab005) !important; 
+        }
+        
+        .details { 
+            background: #e0e5ec; 
+            padding: 15px 25px; 
+            border-radius: 12px; 
+            box-shadow: 5px 5px 10px #babecc, -5px -5px 10px #ffffff; 
+            color: #34495e; 
+            font-size: 18px; 
+            width: 100%; 
+            max-width: 500px; 
+        }
+        
+        .control-panel { 
+            background: #e0e5ec; 
+            padding: 20px; 
+            border-radius: 12px; 
+            box-shadow: 5px 5px 10px #babecc, -5px -5px 10px #ffffff; 
+            color: #34495e; 
+            width: 100%; 
+            max-width: 400px; 
+        }
+        
+        .control-panel h3 { 
+            margin-top: 0; 
+            color: #1e3a5f; 
+        }
+        
+        .control-group { 
+            margin-bottom: 20px; 
+        }
+        
+        .control-group label { 
+            display: block; 
+            margin-bottom: 8px; 
+            font-weight: 600; 
+        }
+        
+        .btn { 
+            padding: 10px 20px; 
+            border: none; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            font-size: 16px; 
+            font-weight: 600; 
+            transition: all 0.3s ease; 
+            margin: 5px; 
+        }
+        
+        .btn-primary { 
+            background: linear-gradient(135deg, #4dabf7, #1971c2); 
+            color: white; 
+        }
+        
+        .btn-primary:hover { 
+            background: linear-gradient(135deg, #339af0, #1864ab); 
+            transform: translateY(-2px); 
+        }
+        
+        .btn-success { 
+            background: linear-gradient(135deg, #38d9a9, #087f5b); 
+            color: white; 
+        }
+        
+        .btn-success:hover { 
+            background: linear-gradient(135deg, #20c997, #0ca678); 
+            transform: translateY(-2px); 
+        }
+        
+        .btn-danger { 
+            background: linear-gradient(135deg, #ff8787, #c92a2a); 
+            color: white; 
+        }
+        
+        .btn-danger:hover { 
+            background: linear-gradient(135deg, #ff6b6b, #e03131); 
+            transform: translateY(-2px); 
+        }
+        
+        .btn:disabled { 
+            opacity: 0.6; 
+            cursor: not-allowed; 
+            transform: none !important; 
+        }
+        
+        .status-indicator { 
+            display: inline-block; 
+            width: 12px; 
+            height: 12px; 
+            border-radius: 50%; 
+            margin-right: 8px; 
+        }
+        
+        .status-connected { 
+            background-color: #38d9a9; 
+        }
+        
+        .status-disconnected { 
+            background-color: #ff8787; 
+        }
+        
+        .history-container { 
+            background: #e0e5ec; 
+            padding: 15px; 
+            border-radius: 12px; 
+            box-shadow: 5px 5px 10px #babecc, -5px -5px 10px #ffffff; 
+            width: 100%; 
+            max-width: 900px; 
+            max-height: 400px; 
+            overflow-y: auto; 
+        }
+        
+        table { 
+            width: 100%; 
+            border-collapse: collapse; 
+        }
+        
+        th, td { 
+            padding: 10px; 
+            text-align: left; 
+            border-bottom: 1px solid #d1d9e6; 
+        }
+        
+        th { 
+            background-color: #d1d9e6; 
+            font-weight: 600; 
+        }
+        
+        tr:nth-child(even) { 
+            background-color: #f0f4f8; 
+        }
+        
+        .status-badge { 
+            padding: 3px 8px; 
+            border-radius: 12px; 
+            font-size: 12px; 
+            font-weight: 600; 
+        }
+        
+        .status-normal { 
+            background-color: #4dabf7; 
+            color: white; 
+        }
+        
+        .status-kritis { 
+            background-color: #c92a2a; 
+            color: white; 
+        }
+        
+        .status-penuh { 
+            background-color: #087f5b; 
+            color: white; 
+        }
+        
+        .status-manual-on { 
+            background-color: #fab005; 
+            color: white; 
+        }
+        
+        .status-manual-off { 
+            background-color: #868e96; 
+            color: white; 
+        }
+        
+        .alert { 
+            padding: 12px; 
+            border-radius: 8px; 
+            margin-bottom: 15px; 
+            font-weight: 600; 
+        }
+        
+        .alert-success { 
+            background-color: #d3f9d8; 
+            color: #087f5b; 
+            border: 1px solid #87d68d; 
+        }
+        
+        .alert-error { 
+            background-color: #ffe0e0; 
+            color: #c92a2a; 
+            border: 1px solid #ff8787; 
+        }
+        
+        .alert-warning { 
+            background-color: #fff3cd; 
+            color: #856404; 
+            border: 1px solid #ffd43b; 
+        }
+        
+        @media (max-width: 768px) {
+            .dashboard { 
+                flex-direction: column; 
+                align-items: center; 
+            }
+            
+            .tank-container, .details, .control-panel, .history-container { 
+                width: 100%; 
+                max-width: 400px; 
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1 class="title">Monitoring Tandon Air Cerdas</h1>
+    
+    <div class="dashboard">
+        <div class="tank-container">
+            <div id="water-level" style="height: 0%;"></div>
+            <div class="info-overlay">
+                <div id="level-percent">--%</div>
+                <div id="alert-status">INIT</div>
+            </div>
+        </div>
+        
+        <div class="details">
+            <h3>Informasi Saat Ini</h3>
+            <p><span class="status-indicator" id="connection-status"></span>Status Koneksi: <b id="connection-text">--</b></p>
+            <p>Mode Kontrol: <b id="control-mode">--</b></p>
+            <p>Status Pompa: <b id="pump-status">--</b></p>
+            <p>Level Air: <b id="water-cm">-- cm</b></p>
+            <p>Status: <b id="status-text">--</b></p>
+            <p>Terakhir Update: <b id="last-update">--</b></p>
+        </div>
+        
+        <div class="control-panel">
+            <h3>Panel Kontrol</h3>
+            <div id="alert-container"></div>
+            
+            <div class="control-group">
+                <label>Mode Kontrol:</label>
+                <button class="btn btn-primary" id="btn-auto" onclick="changeMode('AUTO')">Otomatis</button>
+                <button class="btn btn-primary" id="btn-manual" onclick="changeMode('MANUAL')">Manual</button>
+            </div>
+            
+            <div class="control-group" id="manual-controls" style="display: none;">
+                <label>Kontrol Pompa Manual:</label>
+                <button class="btn btn-success" id="btn-pump-on" onclick="controlPump('ON')">Pompa ON</button>
+                <button class="btn btn-danger" id="btn-pump-off" onclick="controlPump('OFF')">Pompa OFF</button>
+            </div>
+            
+            <div class="control-group">
+                <label>Status Sistem:</label>
+                <p><span class="status-indicator" id="db-status"></span>Database: <b id="db-text">--</b></p>
+                <p><span class="status-indicator" id="serial-status"></span>Arduino: <b id="serial-text">--</b></p>
+            </div>
+        </div>
+        
+        <div class="history-container">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+              <h3>Riwayat Level Air</h3>
+              <button class="btn btn-danger" id="btn-delete-history" onclick="deleteHistory()">Hapus Riwayat</button>
+            </div>
+            <table id="history-table">
+                <thead>
+                    <tr>
+                        <th>Waktu</th>
+                        <th>Tinggi (cm)</th>
+                        <th>Persentase</th>
+                        <th>Mode</th>
+                        <th>Status Pompa</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        const waterLevelEl = document.getElementById('water-level');
+        const levelPercentEl = document.getElementById('level-percent');
+        const alertStatusEl = document.getElementById('alert-status');
+        const pumpStatusEl = document.getElementById('pump-status');
+        const waterCmEl = document.getElementById('water-cm');
+        const statusTextEl = document.getElementById('status-text');
+        const lastUpdateEl = document.getElementById('last-update');
+        const controlModeEl = document.getElementById('control-mode');
+        const connectionStatusEl = document.getElementById('connection-status');
+        const connectionTextEl = document.getElementById('connection-text');
+        const historyTable = document.querySelector('#history-table tbody');
+        const alertContainer = document.getElementById('alert-container');
+        const manualControlsEl = document.getElementById('manual-controls');
+        
+        let currentMode = 'AUTO';
+        let isConnected = false;
+
+        function formatDateTime(datetimeStr) {
+            if (!datetimeStr) return '--';
+            const dt = new Date(datetimeStr);
+            return dt.toLocaleString('id-ID');
+        }
+
+        function getStatusClass(status) {
+            switch(status) {
+                case 'KRITIS': return 'status-kritis';
+                case 'PENUH': return 'status-penuh';
+                case 'MANUAL ON': return 'status-manual-on';
+                case 'MANUAL OFF': return 'status-manual-off';
+                default: return 'status-normal';
+            }
+        }
+
+        function showAlert(message, type = 'success') {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type}`;
+            alertDiv.textContent = message;
+            alertContainer.innerHTML = '';
+            alertContainer.appendChild(alertDiv);
+            
+            setTimeout(() => {
+                alertContainer.innerHTML = '';
+            }, 5000);
+        }
+
+        function updateConnectionStatus(connected) {
+            isConnected = connected;
+            connectionStatusEl.className = `status-indicator ${connected ? 'status-connected' : 'status-disconnected'}`;
+            connectionTextEl.textContent = connected ? 'Terhubung' : 'Terputus';
+        }
+
+        function updateControlButtons() {
+            const btnAuto = document.getElementById('btn-auto');
+            const btnManual = document.getElementById('btn-manual');
+            
+            if (currentMode === 'AUTO') {
+                btnAuto.style.background = 'linear-gradient(135deg, #38d9a9, #087f5b)';
+                btnManual.style.background = 'linear-gradient(135deg, #4dabf7, #1971c2)';
+                manualControlsEl.style.display = 'none';
+            } else {
+                btnManual.style.background = 'linear-gradient(135deg, #38d9a9, #087f5b)';
+                btnAuto.style.background = 'linear-gradient(135deg, #4dabf7, #1971c2)';
+                manualControlsEl.style.display = 'block';
+            }
+        }
+
+        async function changeMode(mode) {
+            try {
+                const response = await fetch('/control', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({mode: mode})
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    currentMode = mode;
+                    updateControlButtons();
+                    showAlert(`Mode berhasil diubah ke ${mode}`, 'success');
+                } else {
+                    showAlert(result.error || 'Gagal mengubah mode', 'error');
+                }
+            } catch (error) {
+                console.error('Error changing mode:', error);
+                showAlert('Gagal mengubah mode: ' + error.message, 'error');
+            }
+        }
+
+        async function controlPump(state) {
+            if (currentMode !== 'MANUAL') {
+                showAlert('Kontrol pompa hanya tersedia dalam mode manual', 'warning');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/control', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({pump_manual: state})
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    showAlert(`Pompa berhasil ${state === 'ON' ? 'dinyalakan' : 'dimatikan'}`, 'success');
+                } else {
+                    showAlert(result.error || 'Gagal mengontrol pompa', 'error');
+                }
+            } catch (error) {
+                console.error('Error controlling pump:', error);
+                showAlert('Gagal mengontrol pompa: ' + error.message, 'error');
+            }
+        }
+
+        async function fetchCurrentData() {
+            try {
+                const response = await fetch('/data');
+                const data = await response.json();
+                
+                updateConnectionStatus(true);
+                
+                const percent = Math.round(data.water_level_percent);
+                
+                // Update visual tangki air
+                waterLevelEl.style.height = `${percent}%`;
+                
+                // Update teks
+                levelPercentEl.textContent = `${percent}%`;
+                alertStatusEl.textContent = data.alert_status;
+                pumpStatusEl.textContent = data.pump_status;
+                waterCmEl.textContent = `${data.water_level_cm.toFixed(1)} cm`;
+                statusTextEl.textContent = data.alert_status;
+                lastUpdateEl.textContent = formatDateTime(data.timestamp);
+                controlModeEl.textContent = data.control_mode || 'AUTO';
+                
+                // Update current mode
+                if (data.control_mode && data.control_mode !== currentMode) {
+                    currentMode = data.control_mode;
+                    updateControlButtons();
+                }
+
+                // Update warna berdasarkan status
+                waterLevelEl.classList.remove('status-penuh', 'status-kritis', 'status-manual');
+                if (data.alert_status === 'PENUH') {
+                    waterLevelEl.classList.add('status-penuh');
+                } else if (data.alert_status === 'KRITIS') {
+                    waterLevelEl.classList.add('status-kritis');
+                } else if (data.alert_status.includes('MANUAL')) {
+                    waterLevelEl.classList.add('status-manual');
+                }
+
+            } catch (error) {
+                console.error("Gagal mengambil data:", error);
+                updateConnectionStatus(false);
+                alertStatusEl.textContent = 'KONEKSI GAGAL';
+            }
+        }
+
+        async function fetchSystemStatus() {
+            try {
+                const response = await fetch('/status');
+                const status = await response.json();
+                
+                // Update database status
+                const dbStatusEl = document.getElementById('db-status');
+                const dbTextEl = document.getElementById('db-text');
+                dbStatusEl.className = `status-indicator ${status.database_connected ? 'status-connected' : 'status-disconnected'}`;
+                dbTextEl.textContent = status.database_connected ? 'Terhubung' : 'Terputus';
+                
+                // Update serial status
+                const serialStatusEl = document.getElementById('serial-status');
+                const serialTextEl = document.getElementById('serial-text');
+                serialStatusEl.className = `status-indicator ${status.serial_connected ? 'status-connected' : 'status-disconnected'}`;
+                serialTextEl.textContent = status.serial_connected ? 'Terhubung' : 'Terputus';
+                
+            } catch (error) {
+                console.error("Gagal mengambil status sistem:", error);
+            }
+        }
+
+        async function fetchHistoryData() {
+            try {
+                const response = await fetch('/history?limit=20');
+                const history = await response.json();
+                
+                historyTable.innerHTML = '';
+                history.forEach(item => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${formatDateTime(item.timestamp)}</td>
+                        <td>${item.water_level_cm.toFixed(1)}</td>
+                        <td>${Math.round(item.water_level_percent)}%</td>
+                        <td>${item.control_mode || 'AUTO'}</td>
+                        <td>${item.pump_status}</td>
+                        <td><span class="status-badge ${getStatusClass(item.alert_status)}">${item.alert_status}</span></td>
+                    `;
+                    historyTable.appendChild(row);
+                });
+            } catch (error) {
+                console.error("Gagal mengambil riwayat:", error);
+            }
+        }
+
+        // --- CODE BARU DITAMBAHKAN DI SINI ---
+        async function deleteHistory() {
+            // Tampilkan dialog konfirmasi
+            if (!confirm('Apakah Anda yakin ingin menghapus semua riwayat data? Tindakan ini tidak dapat diurungkan.')) {
+                return;
+            }
+
+            try {
+                const response = await fetch('/history', {
+                    method: 'DELETE',
+                });
+                const result = await response.json();
+
+                if (response.ok) {
+                    showAlert('Semua riwayat berhasil dihapus.', 'success');
+                    // Muat ulang data riwayat untuk menampilkan tabel yang kosong
+                    fetchHistoryData();
+                } else {
+                    showAlert(result.error || 'Gagal menghapus riwayat.', 'error');
+                }
+            } catch (error) {
+                console.error('Error deleting history:', error);
+                showAlert('Gagal menghapus riwayat: ' + error.message, 'error');
+            }
+        }
+        // --- AKHIR DARI KODE BARU ---
+
+        // Update data setiap 2 detik
+        setInterval(() => {
+            fetchCurrentData();
+            fetchHistoryData();
+        }, 2000);
+
+        // Update status sistem setiap 10 detik
+        setInterval(fetchSystemStatus, 10000);
+
+        // Muat data pertama kali
+        window.onload = () => {
+            fetchCurrentData();
+            fetchHistoryData();
+            fetchSystemStatus();
+            updateControlButtons();
+        };
+    </script>
+</body>
+</html>
